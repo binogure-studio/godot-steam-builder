@@ -12,6 +12,8 @@ Tool used to export your game using godot engine 2.1 and to upload it on steam. 
 
 - [Steam SDK](https://partner.steamgames.com/home), extract to the `sdk` directory.
 
+- [GodotSteam](https://github.com/Mavhod/GodotSteam) from Mavhog
+
 ## Usage
 
 ```

@@ -97,7 +97,8 @@ OUTPUT_WINDOWS=${OUTPUT}/${WINDOWS_DEPOT_ID}
 WINDOWS_BINARY=${OUTPUT_WINDOWS}/${GAME_NAME}.exe
 
 ENGINE_FILE=${GAME_PATH}/engine.cfg
-SDK_LINUX=$(pwd)/sdk/redistributable_bin/linux64/libsteam_api.so
+SDK_LINUX64=$(pwd)/sdk/redistributable_bin/linux64
+SDK_LINUX32=$(pwd)/sdk/redistributable_bin/linux32
 SDK_OSX=$(pwd)/sdk/redistributable_bin/osx32/libsteam_api.dylib
 SDK_WIN64=$(pwd)/sdk/redistributable_bin/win64/steam_api64.dll
 SDK_WIN64_LIB=$(pwd)/sdk/redistributable_bin/win64/steam_api64.lib
@@ -119,15 +120,18 @@ then
   exit -1
 fi
 
-if [ ! -f ${SDK_LINUX} -o ! -f ${SDK_OSX} -o ! -f ${SDK_WIN64} -o ! -f ${SDK_WIN64_LIB} ]
+if [ ! -d ${SDK_LINUX64} -o ! -d ${SDK_LINUX32} -o ! -f ${SDK_OSX} -o ! -f ${SDK_WIN64} -o ! -f ${SDK_WIN64_LIB}-o ! -f ${SDK_WIN32} -o ! -f ${SDK_WIN32_LIB} ]
 then
   echo -e ""
   echo -e "\033[1mWARNING\033[0m - sdk is not present (or missing permission)"
   echo -e "Following files should exist"
-  echo -e "\t${SDK_LINUX}"
+  echo -e "\t${SDK_LINUX32}"
+  echo -e "\t${SDK_LINUX64}"
   echo -e "\t${SDK_OSX}"
   echo -e "\t${SDK_WIN64}"
   echo -e "\t${SDK_WIN64_LIB}"
+  echo -e "\t${SDK_WIN32}"
+  echo -e "\t${SDK_WIN32_LIB}"
   echo -e ""
 
   exit -1
@@ -181,7 +185,8 @@ echo -e ""
 
 echo -e "godot -path ${GAME_PATH} -export \"Linux X11\" \"${LINUX_BINARY}\" 1> ${GODOT_BUILD_LOGS} 2>&1"
 godot -path ${GAME_PATH} -export "Linux X11" "${LINUX_BINARY}" 1>${GODOT_BUILD_LOGS} 2>&1
-cp -a ${SDK_LINUX} ${OUTPUT_LINUX}/
+cp -a ${SDK_LINUX64} ${OUTPUT_LINUX}/
+cp -a ${SDK_LINUX32} ${OUTPUT_LINUX}/
 echo ${APP_ID} > ${OUTPUT_LINUX}/steam_appid.txt
 
 echo -e ""
