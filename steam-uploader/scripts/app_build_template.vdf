@@ -1,0 +1,17 @@
+"appbuild"
+{
+  "appid"       "__APPID__"
+  "buildoutput" "..\output\"
+  "desc"        "__GAME_DESCRIPTION__"
+  "contentroot" "..\content\"
+  "setlive"     ""
+  "preview"     "0"
+  "local"       ""
+  
+  "depots"
+  {
+    "__LINUXDEPOTID__" "depot_build___LINUXDEPOTID__.vdf"
+    "__OSXDEPOTID__" "depot_build___OSXDEPOTID__.vdf"
+    "__WINDOWSDEPOTID__" "depot_build___WINDOWSDEPOTID__.vdf"
+  }
+}
