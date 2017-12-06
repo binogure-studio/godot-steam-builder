@@ -101,6 +101,8 @@ SDK_LINUX=$(pwd)/sdk/redistributable_bin/linux64/libsteam_api.so
 SDK_OSX=$(pwd)/sdk/redistributable_bin/osx32/libsteam_api.dylib
 SDK_WIN64=$(pwd)/sdk/redistributable_bin/win64/steam_api64.dll
 SDK_WIN64_LIB=$(pwd)/sdk/redistributable_bin/win64/steam_api64.lib
+SDK_WIN32=$(pwd)/sdk/redistributable_bin/steam_api.dll
+SDK_WIN32_LIB=$(pwd)/sdk/redistributable_bin/steam_api.lib
 
 LOG_DIR=$(pwd)/logs
 GODOT_BUILD_LOGS=${LOG_DIR}/godot-build.log
@@ -158,14 +160,17 @@ cat ${STEAM_UPLOADER_SCRIPTS}/app_build_template.vdf | sed \
 
 cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_LINUX}'@gi' \
+  -e 's@__BINARY__@'${GAME_NAME}'@gi' \
   -e 's@__DEPOTID__@'${LINUX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${LINUX_DEPOT_ID}.vdf
 
 cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_OSX}'@gi' \
+  -e 's@__BINARY__@'${GAME_NAME}'\.app@gi' \
   -e 's@__DEPOTID__@'${OSX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${OSX_DEPOT_ID}.vdf
 
 cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_WINDOWS}'@gi' \
+  -e 's@__BINARY__@'${GAME_NAME}'\.exe@gi' \
   -e 's@__DEPOTID__@'${WINDOWS_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${WINDOWS_DEPOT_ID}.vdf
 
 echo -e ""
@@ -177,6 +182,7 @@ echo -e ""
 echo -e "godot -path ${GAME_PATH} -export \"Linux X11\" \"${LINUX_BINARY}\" 1> ${GODOT_BUILD_LOGS} 2>&1"
 godot -path ${GAME_PATH} -export "Linux X11" "${LINUX_BINARY}" 1>${GODOT_BUILD_LOGS} 2>&1
 cp -a ${SDK_LINUX} ${OUTPUT_LINUX}/
+echo ${APP_ID} > ${OUTPUT_LINUX}/steam_appid.txt
 
 echo -e ""
 echo -e "\033[1m>>> Mac OSX\033[0m"
@@ -185,6 +191,7 @@ echo -e ""
 echo -e "godot -path ${GAME_PATH} -export \"Mac OSX\" \"${OSX_BINARY}\" 1>> ${GODOT_BUILD_LOGS} 2>&1"
 godot -path ${GAME_PATH} -export "Mac OSX" "${OSX_BINARY}" 1>>${GODOT_BUILD_LOGS} 2>&1
 cp -a ${SDK_OSX} ${OUTPUT_OSX}/
+echo ${APP_ID} > ${OUTPUT_OSX}/steam_appid.txt
 
 echo -e ""
 echo -e "\033[1m>>> Windows Desktop\033[0m"
@@ -194,6 +201,9 @@ echo -e "godot -path ${GAME_PATH} -export \"Windows Desktop\" \"${WINDOWS_BINARY
 godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY}" 1>>${GODOT_BUILD_LOGS} 2>&1
 cp -a ${SDK_WIN64} ${OUTPUT_WINDOWS}/
 cp -a ${SDK_WIN64_LIB} ${OUTPUT_WINDOWS}/
+cp -a ${SDK_WIN32} ${OUTPUT_WINDOWS}/
+cp -a ${SDK_WIN32_LIB} ${OUTPUT_WINDOWS}/
+echo ${APP_ID} > ${OUTPUT_WINDOWS}/steam_appid.txt
 
 cd ${STEAM_UPLOADER_CWD}
 echo -e ""

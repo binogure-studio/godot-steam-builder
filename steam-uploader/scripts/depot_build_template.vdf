@@ -11,5 +11,11 @@
     "recursive" "1"
   }
   
+  "FileProperties"
+  {
+    "LocalPath" "__BINARY__"
+    "Attributes" "executable"
+  }
+
   "FileExclusion" "*.pdb"
 }
