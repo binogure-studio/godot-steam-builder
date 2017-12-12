@@ -88,15 +88,18 @@ STEAM_UPLOADER_BINARY=${STEAM_UPLOADER_CWD}/steamcmd.sh
 
 OUTPUT=$(pwd)/output/${APP_ID}
 OUTPUT_LINUX=${OUTPUT}/${LINUX_DEPOT_ID}
-LINUX_BINARY=${OUTPUT_LINUX}/${GAME_NAME}
+LINUX_BINARY32=${OUTPUT_LINUX}/${GAME_NAME}32
+LINUX_BINARY64=${OUTPUT_LINUX}/${GAME_NAME}64
 
 OUTPUT_OSX=${OUTPUT}/${OSX_DEPOT_ID}
 OSX_BINARY=${OUTPUT_OSX}/${GAME_NAME}.app
 
 OUTPUT_WINDOWS=${OUTPUT}/${WINDOWS_DEPOT_ID}
-WINDOWS_BINARY=${OUTPUT_WINDOWS}/${GAME_NAME}.exe
+WINDOWS_BINARY32=${OUTPUT_WINDOWS}/${GAME_NAME}32.exe
+WINDOWS_BINARY64=${OUTPUT_WINDOWS}/${GAME_NAME}64.exe
 
 ENGINE_FILE=${GAME_PATH}/engine.cfg
+EXPORT_FILE=${GAME_PATH}/export.cfg
 SDK_LINUX64=$(pwd)/sdk/redistributable_bin/linux64
 SDK_LINUX32=$(pwd)/sdk/redistributable_bin/linux32
 SDK_OSX=$(pwd)/sdk/redistributable_bin/osx32/libsteam_api.dylib
@@ -120,7 +123,7 @@ then
   exit -1
 fi
 
-if [ ! -d ${SDK_LINUX64} -o ! -d ${SDK_LINUX32} -o ! -f ${SDK_OSX} -o ! -f ${SDK_WIN64} -o ! -f ${SDK_WIN64_LIB}-o ! -f ${SDK_WIN32} -o ! -f ${SDK_WIN32_LIB} ]
+if [ ! -d "${SDK_LINUX64}" -o ! -d "${SDK_LINUX32}" -o ! -f "${SDK_OSX}" -o ! -f "${SDK_WIN64}" -o ! -f "${SDK_WIN64_LIB}" -o ! -f "${SDK_WIN32}" -o ! -f "${SDK_WIN32_LIB}" ]
 then
   echo -e ""
   echo -e "\033[1mWARNING\033[0m - sdk is not present (or missing permission)"
@@ -164,27 +167,38 @@ cat ${STEAM_UPLOADER_SCRIPTS}/app_build_template.vdf | sed \
 
 cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_LINUX}'@gi' \
-  -e 's@__BINARY__@'${GAME_NAME}'@gi' \
+  -e 's@__BINARY32__@'${GAME_NAME}'32@gi' \
+  -e 's@__BINARY64__@'${GAME_NAME}'64@gi' \
   -e 's@__DEPOTID__@'${LINUX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${LINUX_DEPOT_ID}.vdf
 
-cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
+cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_single_arch.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_OSX}'@gi' \
   -e 's@__BINARY__@'${GAME_NAME}'\.app@gi' \
   -e 's@__DEPOTID__@'${OSX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${OSX_DEPOT_ID}.vdf
 
 cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_WINDOWS}'@gi' \
-  -e 's@__BINARY__@'${GAME_NAME}'\.exe@gi' \
+  -e 's@__BINARY32__@'${GAME_NAME}'32\.exe@gi' \
+  -e 's@__BINARY64__@'${GAME_NAME}'64\.exe@gi' \
   -e 's@__DEPOTID__@'${WINDOWS_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${WINDOWS_DEPOT_ID}.vdf
 
 echo -e ""
 echo -e "\033[1m>>> Building game binaries\033[0m using \033[1mGodot Engine\033[0m"
 echo -e ""
-echo -e "\033[1m>>> GNU/Linux\033[0m"
+echo -e "\033[1m>>> GNU/Linux 32/64bits\033[0m"
 echo -e ""
 
-echo -e "godot -path ${GAME_PATH} -export \"Linux X11\" \"${LINUX_BINARY}\" 1> ${GODOT_BUILD_LOGS} 2>&1"
-godot -path ${GAME_PATH} -export "Linux X11" "${LINUX_BINARY}" 1>${GODOT_BUILD_LOGS} 2>&1
+# Put it in 32bits
+sed -i -e 's@binary/64_bits=true@binary/64_bits=false@gi' "${EXPORT_FILE}"
+
+echo -e "godot -path ${GAME_PATH} -export \"Linux X11\" \"${LINUX_BINARY32}\" 1> ${GODOT_BUILD_LOGS} 2>&1"
+godot -path ${GAME_PATH} -export "Linux X11" "${LINUX_BINARY32}" 1>${GODOT_BUILD_LOGS} 2>&1
+
+# Put it in 64bits
+sed -i -e 's@binary/64_bits=false@binary/64_bits=true@gi' "${EXPORT_FILE}"
+
+echo -e "godot -path ${GAME_PATH} -export \"Linux X11\" \"${LINUX_BINARY64}\" 1> ${GODOT_BUILD_LOGS} 2>&1"
+godot -path ${GAME_PATH} -export "Linux X11" "${LINUX_BINARY64}" 1>${GODOT_BUILD_LOGS} 2>&1
 cp -a ${SDK_LINUX64} ${OUTPUT_LINUX}/
 cp -a ${SDK_LINUX32} ${OUTPUT_LINUX}/
 echo ${APP_ID} > ${OUTPUT_LINUX}/steam_appid.txt
@@ -199,11 +213,20 @@ cp -a ${SDK_OSX} ${OUTPUT_OSX}/
 echo ${APP_ID} > ${OUTPUT_OSX}/steam_appid.txt
 
 echo -e ""
-echo -e "\033[1m>>> Windows Desktop\033[0m"
+echo -e "\033[1m>>> Windows Desktop 32/64bits\033[0m"
 echo -e ""
 
-echo -e "godot -path ${GAME_PATH} -export \"Windows Desktop\" \"${WINDOWS_BINARY}\" 1>> ${GODOT_BUILD_LOGS} 2>&1"
-godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY}" 1>>${GODOT_BUILD_LOGS} 2>&1
+# Put it in 32bits
+sed -i -e 's@binary/64_bits=true@binary/64_bits=false@gi' "${EXPORT_FILE}"
+
+echo -e "godot -path ${GAME_PATH} -export \"Windows Desktop\" \"${WINDOWS_BINARY32}\" 1>> ${GODOT_BUILD_LOGS} 2>&1"
+godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY32}" 1>>${GODOT_BUILD_LOGS} 2>&1
+
+# Put it in 64bits
+sed -i -e 's@binary/64_bits=false@binary/64_bits=true@gi' "${EXPORT_FILE}"
+
+godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY64}" 1>>${GODOT_BUILD_LOGS} 2>&1
+
 cp -a ${SDK_WIN64} ${OUTPUT_WINDOWS}/
 cp -a ${SDK_WIN64_LIB} ${OUTPUT_WINDOWS}/
 cp -a ${SDK_WIN32} ${OUTPUT_WINDOWS}/
