@@ -225,6 +225,8 @@ cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_linux.vdf | sed \
   -e 's@__DEPOTID__@'${LINUX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${LINUX_DEPOT_ID}.vdf
 
 cat ${LINUX_SHELL_TEMPLATE} | sed \
+  -e 's@__APP_ID__@'${APP_ID}'@gi' \
+  -e 's@__GAME_NAME__@'${GAME_NAME}'@gi' \
   -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
   -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' > ${LINUX_SHELL}
 
