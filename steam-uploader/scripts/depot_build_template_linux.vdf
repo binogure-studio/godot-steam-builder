@@ -1,0 +1,33 @@
+"DepotBuildConfig"
+{
+  "DepotID" "__DEPOTID__"
+  "ContentRoot"	"__CONTENT_ROOT__"
+  
+  // include all files recursively
+  "FileMapping"
+  {
+    "LocalPath" "*"
+    "DepotPath" "."
+    "recursive" "1"
+  }
+  
+  "FileProperties"
+  {
+    "LocalPath" "__BINARY32__"
+    "Attributes" "executable"
+  }
+
+  "FileProperties"
+  {
+    "LocalPath" "__BINARY64__"
+    "Attributes" "executable"
+  }
+
+  "FileProperties"
+  {
+    "LocalPath" "__SHELL__"
+    "Attributes" "executable"
+  }
+
+  "FileExclusion" "*.pdb"
+}

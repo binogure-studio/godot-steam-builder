@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+script_root="$(sh -c "cd \"${0%/*}\" && echo \"\$PWD\"")"
+
 function usage() {
   echo -e "\033[1m$(basename $0 .sh)\033[0m - build and upload your game on steam"
   echo -e ""
@@ -27,11 +29,13 @@ function usage() {
   echo -e ""
   echo -e "\t-steam-username=STEAM_USERNAME"
   echo -e "\t\tYour steam username"
+  echo -e ""
+  echo -e "\t-linux-lib32=LINUX_LIB32"
+  echo -e "\t\tPath to your linux lib32 directory (optional)"
+  echo -e ""
+  echo -e "\t-linux-lib64=LINUX_LIB64"
+  echo -e "\t\tPath to your linux lib64 directory (optional)"
 }
-
-case `basename $0 .sh` in
-deledit)    eflag="-e";;
-esac
 
 export LINUX_DEPOT_ID
 export OSX_DEPOT_ID
@@ -40,6 +44,8 @@ export APP_ID
 export GAME_PATH
 export GAME_NAME
 export STEAM_USERNAME
+export LINUX_LIB32
+export LINUX_LIB64
 
 for arg in "$@"
 do
@@ -51,6 +57,14 @@ do
   -linux-depot-id=*)
     LINUX_DEPOT_ID=${arg//-linux-depot-id=/}
     echo "Reading linux-depot-id ${LINUX_DEPOT_ID}"
+    ;;
+  -linux-lib32=*)
+    LINUX_LIB32=${arg//-linux-lib32=/}
+    echo "Reading linux-lib32 ${LINUX_LIB32}"
+    ;;
+  -linux-lib64=*)
+    LINUX_LIB64=${arg//-linux-lib64=/}
+    echo "Reading linux-lib64 ${LINUX_LIB64}"
     ;;
   -osx-depot-id=*)
     OSX_DEPOT_ID=${arg//-osx-depot-id=/}
@@ -82,33 +96,45 @@ then
 fi
 
 # Preparing variables
-STEAM_UPLOADER_CWD=$(pwd)/steam-uploader/builder
-STEAM_UPLOADER_SCRIPTS=$(pwd)/steam-uploader/scripts
+STEAM_UPLOADER_CWD=${script_root}/steam-uploader/builder
+STEAM_UPLOADER_SCRIPTS=${script_root}/steam-uploader/scripts
 STEAM_UPLOADER_BINARY=${STEAM_UPLOADER_CWD}/steamcmd.sh
+LINUX_SHELL_TEMPLATE=${script_root}/game.template.sh
 
-OUTPUT=$(pwd)/output/${APP_ID}
+OUTPUT=${script_root}/output/${APP_ID}
 OUTPUT_LINUX=${OUTPUT}/${LINUX_DEPOT_ID}
 LINUX_BINARY32=${OUTPUT_LINUX}/${GAME_NAME}32
 LINUX_BINARY64=${OUTPUT_LINUX}/${GAME_NAME}64
 
+LINUX_BINARY32_NAME=$(basename ${LINUX_BINARY32})
+LINUX_BINARY64_NAME=$(basename ${LINUX_BINARY64})
+
+LINUX_SHELL=${OUTPUT_LINUX}/${GAME_NAME}.sh
+
 OUTPUT_OSX=${OUTPUT}/${OSX_DEPOT_ID}
 OSX_BINARY=${OUTPUT_OSX}/${GAME_NAME}.app
+
+OSX_BINARY_NAME=$(basename ${OSX_BINARY})
 
 OUTPUT_WINDOWS=${OUTPUT}/${WINDOWS_DEPOT_ID}
 WINDOWS_BINARY32=${OUTPUT_WINDOWS}/${GAME_NAME}32.exe
 WINDOWS_BINARY64=${OUTPUT_WINDOWS}/${GAME_NAME}64.exe
 
+WINDOWS_BINARY32_NAME=$(basename ${WINDOWS_BINARY32})
+WINDOWS_BINARY64_NAME=$(basename ${WINDOWS_BINARY64})
+
+
 ENGINE_FILE=${GAME_PATH}/engine.cfg
 EXPORT_FILE=${GAME_PATH}/export.cfg
-SDK_LINUX64=$(pwd)/sdk/redistributable_bin/linux64
-SDK_LINUX32=$(pwd)/sdk/redistributable_bin/linux32
-SDK_OSX=$(pwd)/sdk/redistributable_bin/osx32/libsteam_api.dylib
-SDK_WIN64=$(pwd)/sdk/redistributable_bin/win64/steam_api64.dll
-SDK_WIN64_LIB=$(pwd)/sdk/redistributable_bin/win64/steam_api64.lib
-SDK_WIN32=$(pwd)/sdk/redistributable_bin/steam_api.dll
-SDK_WIN32_LIB=$(pwd)/sdk/redistributable_bin/steam_api.lib
+SDK_LINUX64=${script_root}/sdk/redistributable_bin/linux64
+SDK_LINUX32=${script_root}/sdk/redistributable_bin/linux32
+SDK_OSX=${script_root}/sdk/redistributable_bin/osx32/libsteam_api.dylib
+SDK_WIN64=${script_root}/sdk/redistributable_bin/win64/steam_api64.dll
+SDK_WIN64_LIB=${script_root}/sdk/redistributable_bin/win64/steam_api64.lib
+SDK_WIN32=${script_root}/sdk/redistributable_bin/steam_api.dll
+SDK_WIN32_LIB=${script_root}/sdk/redistributable_bin/steam_api.lib
 
-LOG_DIR=$(pwd)/logs
+LOG_DIR=${script_root}/logs
 GODOT_BUILD_LOGS=${LOG_DIR}/godot-build.log
 
 if [ ! -f "${ENGINE_FILE}" ]
@@ -121,6 +147,20 @@ then
   echo -e ""
 
   exit -1
+fi
+
+if [ -n "${LINUX_LIB32}" -a ! -d "${LINUX_LIB32}" ]
+then
+  echo -e ""
+  echo -e "\033[1mWARNING\033[0m - invalid linux lib32 directory (or missing permission)"
+  echo -e "\t${LINUX_LIB32}"
+fi
+
+if [ -n "${LINUX_LIB64}" -a ! -d "${LINUX_LIB64}" ]
+then
+  echo -e ""
+  echo -e "\033[1mWARNING\033[0m - invalid linux lib64 directory (or missing permission)"
+  echo -e "\t${LINUX_LIB64}"
 fi
 
 if [ ! -d "${SDK_LINUX64}" -o ! -d "${SDK_LINUX32}" -o ! -f "${SDK_OSX}" -o ! -f "${SDK_WIN64}" -o ! -f "${SDK_WIN64_LIB}" -o ! -f "${SDK_WIN32}" -o ! -f "${SDK_WIN32_LIB}" ]
@@ -151,6 +191,18 @@ mkdir -p ${OUTPUT}/scripts
 
 # Directory for linux
 mkdir -p ${OUTPUT_LINUX}
+mkdir -p ${OUTPUT_LINUX}/lib32
+mkdir -p ${OUTPUT_LINUX}/lib64
+
+if [ -n "${LINUX_LIB32}" ]
+then
+  cp -a ${LINUX_LIB32}/* ${OUTPUT_LINUX}/lib32
+fi
+
+if [ -n "${LINUX_LIB64}" ]
+then
+  cp -a ${LINUX_LIB64}/* ${OUTPUT_LINUX}/lib64
+fi
 
 # Directory for OSX
 mkdir -p ${OUTPUT_OSX}
@@ -165,21 +217,28 @@ cat ${STEAM_UPLOADER_SCRIPTS}/app_build_template.vdf | sed \
   -e 's@__OSXDEPOTID__@'${OSX_DEPOT_ID}'@gi' \
   -e 's@__WINDOWSDEPOTID__@'${WINDOWS_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/app_build_${APP_ID}.vdf
 
-cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
+cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_linux.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_LINUX}'@gi' \
-  -e 's@__BINARY32__@'${GAME_NAME}'32@gi' \
-  -e 's@__BINARY64__@'${GAME_NAME}'64@gi' \
+  -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
+  -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' \
+  -e 's@__SHELL__@'${LINUX_SHELL_NAME}'@gi' \
   -e 's@__DEPOTID__@'${LINUX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${LINUX_DEPOT_ID}.vdf
 
-cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_single_arch.vdf | sed \
+cat ${LINUX_SHELL_TEMPLATE} | sed \
+  -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
+  -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' > ${LINUX_SHELL}
+
+chmod a+x ${LINUX_SHELL}
+
+cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_osx.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_OSX}'@gi' \
-  -e 's@__BINARY__@'${GAME_NAME}'\.app@gi' \
+  -e 's@__BINARY__@'${OSX_BINARY_NAME}'@gi' \
   -e 's@__DEPOTID__@'${OSX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${OSX_DEPOT_ID}.vdf
 
-cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template.vdf | sed \
+cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_windows.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_WINDOWS}'@gi' \
-  -e 's@__BINARY32__@'${GAME_NAME}'32\.exe@gi' \
-  -e 's@__BINARY64__@'${GAME_NAME}'64\.exe@gi' \
+  -e 's@__BINARY32__@'${WINDOWS_BINARY32_NAME}'@gi' \
+  -e 's@__BINARY64__@'${WINDOWS_BINARY64_NAME}'@gi' \
   -e 's@__DEPOTID__@'${WINDOWS_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${WINDOWS_DEPOT_ID}.vdf
 
 echo -e ""
@@ -203,6 +262,8 @@ cp -a ${SDK_LINUX64} ${OUTPUT_LINUX}/
 cp -a ${SDK_LINUX32} ${OUTPUT_LINUX}/
 echo ${APP_ID} > ${OUTPUT_LINUX}/steam_appid.txt
 
+echo -e "Creating the shell script launcher (to include custom libraries)"
+
 echo -e ""
 echo -e "\033[1m>>> Mac OSX\033[0m"
 echo -e ""
@@ -225,6 +286,7 @@ godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY32}" 1>>${GO
 # Put it in 64bits
 sed -i -e 's@binary/64_bits=false@binary/64_bits=true@gi' "${EXPORT_FILE}"
 
+echo -e "godot -path ${GAME_PATH} -export \"Windows Desktop\" \"${WINDOWS_BINARY64}\" 1>> ${GODOT_BUILD_LOGS} 2>&1"
 godot -path ${GAME_PATH} -export "Windows Desktop" "${WINDOWS_BINARY64}" 1>>${GODOT_BUILD_LOGS} 2>&1
 
 cp -a ${SDK_WIN64} ${OUTPUT_WINDOWS}/
