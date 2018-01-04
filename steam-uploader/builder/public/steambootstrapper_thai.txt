@@ -75,4 +75,6 @@
 "[english]SteamBootstrapper_RunFromDiskImageOSX"	"Please drag %appname% into your Applications folder before launching it."
 "SteamBootstrapper_InstallDirIncompatible"	"%appname% ไม่สามารถเริ่มเปิดจากตำแหน่งโฟลเดอร์ที่มีตัวอักษรที่ไม่ใช่ ASCII บน Windows เวอร์ชันนี้ได้ กรุณาติดตั้ง %appname% ใหม่อีกครั้งบนโฟลเดอร์เริ่มต้น หรือติดตั้งบน Windows 7 หรือใหม่กว่า"
 "[english]SteamBootstrapper_InstallDirIncompatible"	"%appname% cannot run from a folder path with non-ASCII characters on this version of Windows. Please re-install %appname% to the default folder, or install on Windows 7 or later."
+"SteamBootstrapper_AlreadyRunningError"	"โปรแกรม %appname% กำลังเปิดบนคอมพิวเตอร์นี้อยู่แล้วโดยใช้บัญชีผู้ใช้อื่น"
+"[english]SteamBootstrapper_AlreadyRunningError"	"An instance of %appname% is already running on this computer, under a different user account."
 }

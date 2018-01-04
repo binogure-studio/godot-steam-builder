@@ -24,4 +24,4 @@ then
 fi
 
 
-exec "${game_root}/${GAME_BINARY}" $@
+exec "${game_root}/${GAME_BINARY}" $@ > __GAME_NAME__.log

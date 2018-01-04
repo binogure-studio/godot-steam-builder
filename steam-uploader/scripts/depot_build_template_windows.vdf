@@ -23,5 +23,17 @@
     "Attributes" "executable"
   }
 
+  "FileProperties"
+  {
+    "LocalPath" "__BATCH32__"
+    "Attributes" "executable"
+  }
+
+  "FileProperties"
+  {
+    "LocalPath" "__BATCH64__"
+    "Attributes" "executable"
+  }
+
   "FileExclusion" "*.pdb"
 }

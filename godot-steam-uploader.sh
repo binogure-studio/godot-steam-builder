@@ -117,12 +117,16 @@ OSX_BINARY=${OUTPUT_OSX}/${GAME_NAME}.app
 OSX_BINARY_NAME=$(basename ${OSX_BINARY})
 
 OUTPUT_WINDOWS=${OUTPUT}/${WINDOWS_DEPOT_ID}
+WINDOWS_BATCH_TEMPLATE32=${script_root}/game.template.32.bat
+WINDOWS_BATCH_TEMPLATE64=${script_root}/game.template.64.bat
 WINDOWS_BINARY32=${OUTPUT_WINDOWS}/${GAME_NAME}32.exe
 WINDOWS_BINARY64=${OUTPUT_WINDOWS}/${GAME_NAME}64.exe
 
 WINDOWS_BINARY32_NAME=$(basename ${WINDOWS_BINARY32})
 WINDOWS_BINARY64_NAME=$(basename ${WINDOWS_BINARY64})
 
+WINDOWS_BATCH32=${OUTPUT_WINDOWS}/${GAME_NAME}32.bat
+WINDOWS_BATCH64=${OUTPUT_WINDOWS}/${GAME_NAME}64.bat
 
 ENGINE_FILE=${GAME_PATH}/engine.cfg
 EXPORT_FILE=${GAME_PATH}/export.cfg
@@ -221,7 +225,7 @@ cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_linux.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_LINUX}'@gi' \
   -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
   -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' \
-  -e 's@__SHELL__@'${LINUX_SHELL_NAME}'@gi' \
+  -e 's@__SHELL__@'${LINUX_SHELL}'@gi' \
   -e 's@__DEPOTID__@'${LINUX_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${LINUX_DEPOT_ID}.vdf
 
 cat ${LINUX_SHELL_TEMPLATE} | sed \
@@ -241,7 +245,21 @@ cat ${STEAM_UPLOADER_SCRIPTS}/depot_build_template_windows.vdf | sed \
   -e 's@__CONTENT_ROOT__@'${OUTPUT_WINDOWS}'@gi' \
   -e 's@__BINARY32__@'${WINDOWS_BINARY32_NAME}'@gi' \
   -e 's@__BINARY64__@'${WINDOWS_BINARY64_NAME}'@gi' \
+  -e 's@__BATCH32__@'${WINDOWS_BATCH32}'@gi' \
+  -e 's@__BATCH64__@'${WINDOWS_BATCH64}'@gi' \
   -e 's@__DEPOTID__@'${WINDOWS_DEPOT_ID}'@gi' > ${OUTPUT}/scripts/depot_build_${WINDOWS_DEPOT_ID}.vdf
+
+cat ${WINDOWS_BATCH_TEMPLATE32} | sed \
+  -e 's@__APP_ID__@'${APP_ID}'@gi' \
+  -e 's@__GAME_NAME__@'${GAME_NAME}'@gi' \
+  -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
+  -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' > ${WINDOWS_BATCH32}
+
+cat ${WINDOWS_BATCH_TEMPLATE64} | sed \
+  -e 's@__APP_ID__@'${APP_ID}'@gi' \
+  -e 's@__GAME_NAME__@'${GAME_NAME}'@gi' \
+  -e 's@__BINARY32__@'${LINUX_BINARY32_NAME}'@gi' \
+  -e 's@__BINARY64__@'${LINUX_BINARY64_NAME}'@gi' > ${WINDOWS_BATCH64}
 
 echo -e ""
 echo -e "\033[1m>>> Building game binaries\033[0m using \033[1mGodot Engine\033[0m"
