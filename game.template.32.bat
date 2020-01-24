@@ -1,3 +1,1 @@
-@echo off
-
-__BINARY32__.exe > __GAME_NAME__.log
+__BINARY32__ > __GAME_NAME__.log

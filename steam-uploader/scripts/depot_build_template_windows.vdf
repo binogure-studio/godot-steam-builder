@@ -13,25 +13,13 @@
   
   "FileProperties"
   {
-    "LocalPath" "__BINARY32__"
+    "LocalPath" "__BINARY__"
     "Attributes" "executable"
   }
 
   "FileProperties"
   {
-    "LocalPath" "__BINARY64__"
-    "Attributes" "executable"
-  }
-
-  "FileProperties"
-  {
-    "LocalPath" "__BATCH32__"
-    "Attributes" "executable"
-  }
-
-  "FileProperties"
-  {
-    "LocalPath" "__BATCH64__"
+    "LocalPath" "__BATCH__"
     "Attributes" "executable"
   }
 

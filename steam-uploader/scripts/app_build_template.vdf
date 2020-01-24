@@ -4,7 +4,7 @@
   "buildoutput" "..\output\"
   "desc"        "__GAME_DESCRIPTION__"
   "contentroot" "..\content\"
-  "setlive"     ""
+  "setlive"     "internal"
   "preview"     "0"
   "local"       ""
   
@@ -13,5 +13,6 @@
     "__LINUXDEPOTID__" "depot_build___LINUXDEPOTID__.vdf"
     "__OSXDEPOTID__" "depot_build___OSXDEPOTID__.vdf"
     "__WINDOWSDEPOTID__" "depot_build___WINDOWSDEPOTID__.vdf"
+    "__WINDOWS64DEPOTID__" "depot_build___WINDOWS64DEPOTID__.vdf"
   }
 }
